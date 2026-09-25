@@ -1,0 +1,6 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Siphon.Core/Siphon.Core.csproj" />
+    <Project Path="src/Siphon.Harness/Siphon.Harness.csproj" />
+  </Folder>
+</Solution>
