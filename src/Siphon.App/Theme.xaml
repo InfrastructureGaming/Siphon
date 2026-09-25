@@ -1,0 +1,302 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Studio hardware: graphite faceplate, amber meter glow, one red lamp. -->
+    <Color x:Key="FaceplateColor">#2B2C30</Color>
+    <Color x:Key="PanelColor">#36383D</Color>
+    <Color x:Key="LabelColor">#E9E2D2</Color>
+    <Color x:Key="MutedColor">#8D8980</Color>
+    <Color x:Key="AmberColor">#F0A43C</Color>
+    <Color x:Key="LampRedColor">#E2473B</Color>
+
+    <SolidColorBrush x:Key="FaceplateBrush" Color="{StaticResource FaceplateColor}" />
+    <SolidColorBrush x:Key="PanelBrush" Color="{StaticResource PanelColor}" />
+    <SolidColorBrush x:Key="PanelHoverBrush" Color="#3E4046" />
+    <SolidColorBrush x:Key="EdgeBrush" Color="#45474D" />
+    <SolidColorBrush x:Key="LabelBrush" Color="{StaticResource LabelColor}" />
+    <SolidColorBrush x:Key="MutedBrush" Color="{StaticResource MutedColor}" />
+    <SolidColorBrush x:Key="AmberBrush" Color="{StaticResource AmberColor}" />
+    <SolidColorBrush x:Key="LampRedBrush" Color="{StaticResource LampRedColor}" />
+    <SolidColorBrush x:Key="MeterIdleBrush" Color="{StaticResource MutedColor}" Opacity="0.22" />
+    <SolidColorBrush x:Key="HoverWashBrush" Color="#FFFFFF" Opacity="0.07" />
+
+    <FontFamily x:Key="UiFont">pack://application:,,,/Assets/Fonts/#Barlow Semi Condensed</FontFamily>
+    <FontFamily x:Key="IconFont">Segoe Fluent Icons, Segoe MDL2 Assets</FontFamily>
+
+    <!-- Amber ring for keyboard focus only (never shown on mouse click). -->
+    <Style x:Key="AmberFocusVisual">
+        <Setter Property="Control.Template">
+            <Setter.Value>
+                <ControlTemplate>
+                    <Border Margin="-2" BorderBrush="{StaticResource AmberBrush}" BorderThickness="1.5" CornerRadius="5" />
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Small square icon button used in the drag bar and footer. -->
+    <Style x:Key="IconButton" TargetType="ButtonBase">
+        <Setter Property="Width" Value="30" />
+        <Setter Property="Height" Value="28" />
+        <Setter Property="Foreground" Value="{StaticResource MutedBrush}" />
+        <Setter Property="FontFamily" Value="{StaticResource IconFont}" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="FocusVisualStyle" Value="{StaticResource AmberFocusVisual}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ButtonBase">
+                    <Border x:Name="bg" Background="Transparent" CornerRadius="4">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="bg" Property="Background" Value="{StaticResource HoverWashBrush}" />
+                            <Setter Property="Foreground" Value="{StaticResource LabelBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Setter TargetName="bg" Property="Opacity" Value="0.6" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="CloseButton" TargetType="Button" BasedOn="{StaticResource IconButton}">
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="bg" Background="Transparent" CornerRadius="4">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="bg" Property="Background" Value="{StaticResource LampRedBrush}" />
+                            <Setter Property="Foreground" Value="White" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- The record button: an unlit lamp that lights and breathes while recording. -->
+    <Style x:Key="RecordButton" TargetType="Button">
+        <Setter Property="Width" Value="132" />
+        <Setter Property="Height" Value="132" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="FocusVisualStyle">
+            <Setter.Value>
+                <Style>
+                    <Setter Property="Control.Template">
+                        <Setter.Value>
+                            <ControlTemplate>
+                                <Ellipse Margin="6" Stroke="{StaticResource AmberBrush}" StrokeThickness="2" />
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </Setter.Value>
+        </Setter>
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Grid x:Name="Body" Background="Transparent" RenderTransformOrigin="0.5,0.5">
+                        <Grid.RenderTransform>
+                            <ScaleTransform ScaleX="1" ScaleY="1" />
+                        </Grid.RenderTransform>
+
+                        <!-- Drop shadow seating the button into the faceplate. -->
+                        <Ellipse Width="112" Height="112" Margin="0,3,0,0">
+                            <Ellipse.Fill>
+                                <RadialGradientBrush>
+                                    <GradientStop Offset="0.86" Color="#66000000" />
+                                    <GradientStop Offset="1" Color="#00000000" />
+                                </RadialGradientBrush>
+                            </Ellipse.Fill>
+                        </Ellipse>
+
+                        <!-- Matte body. -->
+                        <Ellipse Width="108" Height="108" StrokeThickness="1.5" Stroke="#1D1E21">
+                            <Ellipse.Fill>
+                                <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
+                                    <GradientStop Offset="0" Color="#404247" />
+                                    <GradientStop Offset="1" Color="#2A2B2F" />
+                                </LinearGradientBrush>
+                            </Ellipse.Fill>
+                        </Ellipse>
+
+                        <!-- Top-lit bevel. -->
+                        <Ellipse Width="104" Height="104" StrokeThickness="1">
+                            <Ellipse.Stroke>
+                                <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
+                                    <GradientStop Offset="0" Color="#1FFFFFFF" />
+                                    <GradientStop Offset="0.5" Color="#00FFFFFF" />
+                                </LinearGradientBrush>
+                            </Ellipse.Stroke>
+                        </Ellipse>
+
+                        <!-- Recessed well the lamp sits in. -->
+                        <Ellipse Width="50" Height="50">
+                            <Ellipse.Fill>
+                                <LinearGradientBrush StartPoint="0.5,0" EndPoint="0.5,1">
+                                    <GradientStop Offset="0" Color="#1E1F22" />
+                                    <GradientStop Offset="1" Color="#35373C" />
+                                </LinearGradientBrush>
+                            </Ellipse.Fill>
+                        </Ellipse>
+
+                        <!-- Lamp glow (hidden until recording). -->
+                        <Ellipse x:Name="Glow" Width="96" Height="96" Opacity="0" IsHitTestVisible="False">
+                            <Ellipse.Fill>
+                                <RadialGradientBrush>
+                                    <GradientStop Offset="0" Color="#B3E2473B" />
+                                    <GradientStop Offset="0.38" Color="#55E2473B" />
+                                    <GradientStop Offset="1" Color="#00E2473B" />
+                                </RadialGradientBrush>
+                            </Ellipse.Fill>
+                        </Ellipse>
+
+                        <!-- Unlit lamp. -->
+                        <Ellipse x:Name="LampOff" Width="36" Height="36">
+                            <Ellipse.Fill>
+                                <RadialGradientBrush GradientOrigin="0.4,0.3">
+                                    <GradientStop Offset="0" Color="#7A3A34" />
+                                    <GradientStop Offset="1" Color="#4E2723" />
+                                </RadialGradientBrush>
+                            </Ellipse.Fill>
+                        </Ellipse>
+
+                        <!-- Lit lamp. -->
+                        <Ellipse x:Name="LampOn" Width="36" Height="36" Opacity="0">
+                            <Ellipse.Fill>
+                                <RadialGradientBrush GradientOrigin="0.4,0.3">
+                                    <GradientStop Offset="0" Color="#FF8A7C" />
+                                    <GradientStop Offset="0.55" Color="{StaticResource LampRedColor}" />
+                                    <GradientStop Offset="1" Color="#B8342A" />
+                                </RadialGradientBrush>
+                            </Ellipse.Fill>
+                        </Ellipse>
+                    </Grid>
+
+                    <ControlTemplate.Resources>
+                        <!-- A slow breath looks identical at 20 fps and costs a third of the default 60. -->
+                        <Storyboard x:Key="Breathe" RepeatBehavior="Forever" AutoReverse="True" Timeline.DesiredFrameRate="20">
+                            <DoubleAnimation Storyboard.TargetName="Glow" Storyboard.TargetProperty="Opacity"
+                                             From="0.6" To="1.0" Duration="0:0:2">
+                                <DoubleAnimation.EasingFunction>
+                                    <SineEase EasingMode="EaseInOut" />
+                                </DoubleAnimation.EasingFunction>
+                            </DoubleAnimation>
+                        </Storyboard>
+                        <Storyboard x:Key="PressDown">
+                            <DoubleAnimation Storyboard.TargetName="Body" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="0.96" Duration="0:0:0.06" />
+                            <DoubleAnimation Storyboard.TargetName="Body" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="0.96" Duration="0:0:0.06" />
+                        </Storyboard>
+                        <Storyboard x:Key="PressUp">
+                            <DoubleAnimation Storyboard.TargetName="Body" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleX)" To="1" Duration="0:0:0.12" />
+                            <DoubleAnimation Storyboard.TargetName="Body" Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)" To="1" Duration="0:0:0.12" />
+                        </Storyboard>
+                    </ControlTemplate.Resources>
+
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsPressed" Value="True">
+                            <Trigger.EnterActions>
+                                <BeginStoryboard Storyboard="{StaticResource PressDown}" />
+                            </Trigger.EnterActions>
+                            <Trigger.ExitActions>
+                                <BeginStoryboard Storyboard="{StaticResource PressUp}" />
+                            </Trigger.ExitActions>
+                        </Trigger>
+
+                        <DataTrigger Binding="{Binding IsRecording}" Value="True">
+                            <Setter TargetName="LampOn" Property="Opacity" Value="1" />
+                            <Setter TargetName="LampOff" Property="Opacity" Value="0" />
+                            <!-- Steady glow; the breathing storyboard below overrides it when motion is allowed. -->
+                            <Setter TargetName="Glow" Property="Opacity" Value="1" />
+                        </DataTrigger>
+
+                        <MultiDataTrigger>
+                            <MultiDataTrigger.Conditions>
+                                <Condition Binding="{Binding IsRecording}" Value="True" />
+                                <Condition Binding="{Binding AnimationsEnabled}" Value="True" />
+                            </MultiDataTrigger.Conditions>
+                            <MultiDataTrigger.EnterActions>
+                                <BeginStoryboard x:Name="BreatheRun" Storyboard="{StaticResource Breathe}" />
+                            </MultiDataTrigger.EnterActions>
+                            <MultiDataTrigger.ExitActions>
+                                <RemoveStoryboard BeginStoryboardName="BreatheRun" />
+                            </MultiDataTrigger.ExitActions>
+                        </MultiDataTrigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- Source picker. Phase 2 lists only system audio; the template is ready for app entries. -->
+    <Style x:Key="PickerItem" TargetType="ComboBoxItem">
+        <Setter Property="Foreground" Value="{StaticResource LabelBrush}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ComboBoxItem">
+                    <Border x:Name="bg" Background="Transparent" Padding="10,7" CornerRadius="4">
+                        <ContentPresenter />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsHighlighted" Value="True">
+                            <Setter TargetName="bg" Property="Background" Value="{StaticResource HoverWashBrush}" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="SourcePicker" TargetType="ComboBox">
+        <Setter Property="Foreground" Value="{StaticResource LabelBrush}" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="Height" Value="36" />
+        <Setter Property="ItemContainerStyle" Value="{StaticResource PickerItem}" />
+        <Setter Property="FocusVisualStyle" Value="{StaticResource AmberFocusVisual}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ComboBox">
+                    <Grid>
+                        <ToggleButton x:Name="Toggle" Focusable="False" Cursor="Hand"
+                                      IsChecked="{Binding IsDropDownOpen, Mode=TwoWay, RelativeSource={RelativeSource TemplatedParent}}">
+                            <ToggleButton.Template>
+                                <ControlTemplate TargetType="ToggleButton">
+                                    <Border x:Name="bg" Background="{StaticResource PanelBrush}" CornerRadius="6" />
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="bg" Property="Background" Value="{StaticResource PanelHoverBrush}" />
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </ToggleButton.Template>
+                        </ToggleButton>
+                        <ContentPresenter Margin="12,0,32,0" VerticalAlignment="Center" IsHitTestVisible="False"
+                                          Content="{TemplateBinding SelectionBoxItem}"
+                                          ContentTemplate="{TemplateBinding SelectionBoxItemTemplate}" />
+                        <TextBlock Margin="0,0,12,0" HorizontalAlignment="Right" VerticalAlignment="Center" IsHitTestVisible="False"
+                                   FontFamily="{StaticResource IconFont}" FontSize="10" Text="&#xE70D;"
+                                   Foreground="{StaticResource MutedBrush}" />
+                        <Popup IsOpen="{TemplateBinding IsDropDownOpen}" Placement="Bottom" VerticalOffset="4"
+                               AllowsTransparency="True" Focusable="False" PopupAnimation="Fade"
+                               Width="{Binding ActualWidth, RelativeSource={RelativeSource TemplatedParent}}">
+                            <Border Background="{StaticResource PanelBrush}" BorderBrush="{StaticResource EdgeBrush}"
+                                    BorderThickness="1" CornerRadius="6" Padding="4">
+                                <ScrollViewer MaxHeight="220" VerticalScrollBarVisibility="Auto">
+                                    <ItemsPresenter />
+                                </ScrollViewer>
+                            </Border>
+                        </Popup>
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+</ResourceDictionary>

@@ -14,6 +14,7 @@ return args switch
     ["gaptest", .. var rest] => await GapTestAsync(rest.FirstOrDefault() ?? RecordingNames.DefaultFolder),
     ["killtest", .. var rest] => await KillTestAsync(rest.FirstOrDefault() ?? RecordingNames.DefaultFolder),
     ["inspect", var path] => Inspect(path),
+    ["tone", var secs, .. var rest] => await ToneAsync(double.Parse(secs), rest is [var g] ? double.Parse(g) : 0.05),
     ["envelope", var path, .. var rest] => Envelope(path, rest is [var ms] ? int.Parse(ms) : 250),
     _ => Usage(),
 };
@@ -180,6 +181,20 @@ static async Task<int> KillTestAsync(string folder)
         && info.DiskSeconds - info.HeaderSeconds <= 1.2;
     Console.WriteLine(pass ? "PASS" : "FAIL");
     return pass ? 0 : 1;
+}
+
+static async Task<int> ToneAsync(double seconds, double gain)
+{
+    using var device = SystemLoopbackSource.GetDefaultRenderDevice();
+    WaveFormat mix = device.AudioClient.MixFormat;
+    using var output = new WasapiOut(device, AudioClientShareMode.Shared, useEventSync: true, latency: 20);
+    var tone = new SignalGenerator(mix.SampleRate, Math.Min(mix.Channels, 2)) { Type = SignalGeneratorType.Sin, Frequency = 440, Gain = gain };
+    var stopped = new TaskCompletionSource();
+    output.PlaybackStopped += (_, _) => stopped.TrySetResult();
+    output.Init(tone.Take(TimeSpan.FromSeconds(seconds)));
+    output.Play();
+    await stopped.Task;
+    return 0;
 }
 
 static int Inspect(string path)
