@@ -46,6 +46,17 @@ public partial class MainWindow : Window
 
     private void OnMinimizeClick(object sender, RoutedEventArgs e) => WindowState = WindowState.Minimized;
 
+    private void OnSettingsOpened(object? sender, EventArgs e) => ChangeFolderButton.Focus();
+
+    private void OnSettingsKeyDown(object sender, KeyEventArgs e)
+    {
+        if (e.Key != Key.Escape)
+            return;
+        SettingsPopup.IsOpen = false;
+        SettingsButton.Focus();
+        e.Handled = true;
+    }
+
     private void OnLastFileMouseDown(object sender, MouseButtonEventArgs e)
     {
         if (e.ClickCount == 2)

@@ -81,6 +81,61 @@
         </Setter>
     </Style>
 
+    <!-- Text button for secondary actions inside panels. -->
+    <Style x:Key="PanelButton" TargetType="Button">
+        <Setter Property="Foreground" Value="{StaticResource LabelBrush}" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="Padding" Value="10,4" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="FocusVisualStyle" Value="{StaticResource AmberFocusVisual}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="bg" Background="{StaticResource FaceplateBrush}" CornerRadius="4" Padding="{TemplateBinding Padding}">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="bg" Property="Background" Value="#232427" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- On/off switch: muted track when off, amber when on. -->
+    <Style x:Key="Switch" TargetType="ToggleButton">
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="FocusVisualStyle" Value="{StaticResource AmberFocusVisual}" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="ToggleButton">
+                    <Grid Background="Transparent">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <ContentPresenter VerticalAlignment="Center" />
+                        <Border x:Name="Track" Grid.Column="1" Width="34" Height="18" CornerRadius="9"
+                                Background="{StaticResource FaceplateBrush}" BorderBrush="{StaticResource EdgeBrush}" BorderThickness="1">
+                            <Ellipse x:Name="Thumb" Width="10" Height="10" Margin="4,0" HorizontalAlignment="Left"
+                                     Fill="{StaticResource MutedBrush}" />
+                        </Border>
+                    </Grid>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="Track" Property="Background" Value="{StaticResource AmberBrush}" />
+                            <Setter TargetName="Track" Property="BorderBrush" Value="{StaticResource AmberBrush}" />
+                            <Setter TargetName="Thumb" Property="Fill" Value="{StaticResource FaceplateBrush}" />
+                            <Setter TargetName="Thumb" Property="HorizontalAlignment" Value="Right" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
     <!-- The record button: an unlit lamp that lights and breathes while recording. -->
     <Style x:Key="RecordButton" TargetType="Button">
         <Setter Property="Width" Value="132" />

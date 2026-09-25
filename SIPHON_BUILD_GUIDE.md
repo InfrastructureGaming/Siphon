@@ -13,7 +13,7 @@ This guide is written for Claude Code. Build it in phase order and verify each p
 ### In scope (v1)
 - Record **all system audio** from the default output device via WASAPI loopback.
 - Record **a single app's audio** via Windows process loopback.
-- Save as **WAV** in 32-bit float (native), 24-bit PCM, or 16-bit PCM (dithered).
+- Save as **WAV** in the native capture format (32-bit float), bit-for-bit, with no conversion.
 - Give the file a **correct duration even when the source goes silent** (gap filling; see §5).
 - **Crash-safe files**: if the app dies mid-recording, everything up to the last second is still playable.
 - **Tiny window** with a big record button, timer, stereo level meter, and source picker.
@@ -21,6 +21,7 @@ This guide is written for Claude Code. Build it in phase order and verify each p
 
 ### Out of scope (v1)
 - Compressed formats (MP3/FLAC/etc.).
+- Bit-depth reduction and dither. Siphon captures full quality only; downsample elsewhere.
 - Recordings over ~3 hours (a size guard handles this; see §6).
 - Microphone input or mixing multiple sources.
 - Resampling. The file uses whatever sample rate the device/format provides.
@@ -52,7 +53,7 @@ No other dependencies. Keep it lean.
 ┌─────────────┐     ┌──────────────────┐     ┌────────────────┐
 │ ICaptureSource│──▶│  CaptureSession  │──▶ │   WavSink      │
 │  (system or │ buf │  - gap filler    │ q  │  - format conv │
-│   process)  │     │  - level meter   │    │  - dither      │
+│   process)  │     │  - level meter   │    │  - passthrough │
 └─────────────┘     │  - clock         │    │  - periodic    │
                     └──────────────────┘    │    header flush│
                              │              └────────────────┘
@@ -67,7 +68,7 @@ No other dependencies. Keep it lean.
   - `SystemLoopbackSource` wraps NAudio's `WasapiLoopbackCapture`.
   - `ProcessLoopbackSource` wraps our interop (§4).
 - `CaptureSession` owns one source and one sink, runs the writer task, computes peak levels, and tracks elapsed time.
-- `WavSink` wraps `WaveFileWriter`, handles bit-depth conversion and dither, and flushes the header periodically.
+- `WavSink` wraps `WaveFileWriter`, writes the source format untouched, and flushes the header periodically.
 - `AudioSourceCatalog` lists "System audio" plus the apps currently playing sound.
 
 ---
@@ -126,16 +127,8 @@ Requires Windows 10 2004+ / Windows 11. Check at startup, and if unsupported, hi
 
 ## 6. Writing WAV files
 
-- Use NAudio's `WaveFileWriter` with a target `WaveFormat` chosen from settings:
-
-| Setting | Format | Notes |
-|---|---|---|
-| **32-bit float** (default) | IEEE float | Bit-for-bit what Windows mixed. No conversion. |
-| 24-bit PCM | PCM | Clamp to [−1, 1], scale, and apply TPDF dither. |
-| 16-bit PCM | PCM | Clamp to [−1, 1], scale, and apply TPDF dither. |
-
-- **TPDF dither:** add `(rand() − rand()) × 1 LSB` before rounding. Use a fast, cheap PRNG such as xorshift, with separate state per channel.
-- If the source is already 16-bit PCM (process-loopback fallback), write it directly when 16-bit is chosen, and upconvert losslessly for the other options.
+- Use NAudio's `WaveFileWriter` and write **the source format untouched**: bit-for-bit what Windows delivered, with no conversion, requantization, or dither. In practice this is almost always 32-bit IEEE float. Siphon captures at full quality only; downsampling and dithering belong in another application.
+- If the source is 16-bit PCM (the process-loopback fallback), the file is 16-bit PCM. That is still lossless for that source.
 - **Crash safety:** call `writer.Flush()` about once per second. In NAudio this updates the RIFF/data size fields in the header, so a killed process still leaves a valid file.
 - **Size guard:** at 3.8 GB, stop automatically, finalize the file, and show "Recording stopped at the file size limit." This will almost never trigger, but a silent failure there would be awful.
 - **Filenames:** `Siphon_2026-09-25_14-32-07.wav` for system audio and `Siphon_Spotify_2026-09-25_14-32-07.wav` for a single app. Sanitize app names.
@@ -218,7 +211,6 @@ The footer's last-file row starts `DragDrop.DoDragDrop` with a `DataObject(DataF
 
 ### Settings (small popover, not a separate window)
 - Output folder
-- Bit depth: 32-bit float / 24-bit / 16-bit
 - Always on top (mirrors the pin)
 
 Store them as JSON in `%APPDATA%\Siphon\settings.json`.
@@ -237,9 +229,9 @@ Store them as JSON in `%APPDATA%\Siphon\settings.json`.
 - Wire it to system loopback only.
 - ✅ Verify: the meter moves while idle, the timer matches the file length, and the button is keyboard operable.
 
-**Phase 3 — Formats**
-- 24/16-bit conversion with TPDF dither, settings popover, and output folder.
-- ✅ Verify: files open correctly in Audacity at each bit depth, and there is no clipping on a full-scale source.
+**Phase 3 — Settings**
+- Settings popover: output folder and always on top. (Bit-depth options and dither were dropped from scope.)
+- ✅ Verify: changing the output folder takes effect on the next recording, survives a restart, and a missing folder is created. Files open correctly in Audacity.
 
 **Phase 4 — Per-app capture**
 - Process loopback interop, the app list in the picker, OS version check, and fallback format.
@@ -257,7 +249,6 @@ Store them as JSON in `%APPDATA%\Siphon\settings.json`.
 - [ ] Task Manager kill mid-record → the file plays up to about the last second.
 - [ ] 44.1 kHz and 96 kHz output devices record at their native rate.
 - [ ] A 5.1 device records without crashing, and the meter shows L/R.
-- [ ] 16-bit export of a quiet fade has no audible truncation distortion (dither works).
 - [ ] Device switch mid-record → file saved, message shown, no crash.
 - [ ] Target app closes mid-record → recording continues with silence.
 - [ ] Drag-out into Explorer and into a DAW both work.

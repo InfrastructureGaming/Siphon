@@ -139,6 +139,7 @@
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*" />
                         <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
                     </Grid.ColumnDefinitions>
 
                     <Border x:Name="LastFileRow" Grid.Column="0" Background="Transparent" CornerRadius="4" Padding="6,0"
@@ -179,8 +180,48 @@
 
                     <Button Grid.Column="1" Style="{StaticResource IconButton}" Content="&#xE838;" FontSize="14"
                             ToolTip="Show in folder" Command="{Binding OpenFolderCommand}" />
+
+                    <!-- Hit-testing is off while the popover is open, so a click here closes it instead of reopening it. -->
+                    <ToggleButton x:Name="SettingsButton" Grid.Column="2" Style="{StaticResource IconButton}"
+                                  Content="&#xE713;" FontSize="14" ToolTip="Settings"
+                                  IsChecked="{Binding IsOpen, ElementName=SettingsPopup}"
+                                  IsHitTestVisible="{Binding IsOpen, ElementName=SettingsPopup, Converter={StaticResource Not}}" />
                 </Grid>
             </Border>
+
+            <!-- Settings popover, rising out of the footer. -->
+            <Popup x:Name="SettingsPopup" Grid.Row="5" StaysOpen="False" AllowsTransparency="True"
+                   PlacementTarget="{Binding ElementName=SettingsButton}" Placement="Top"
+                   HorizontalOffset="-252" VerticalOffset="-6" PopupAnimation="Fade"
+                   Opened="OnSettingsOpened" PreviewKeyDown="OnSettingsKeyDown">
+                <Border Width="276" Margin="0,0,0,8" Padding="14,12,14,14" CornerRadius="8"
+                        Background="{StaticResource PanelBrush}" BorderBrush="{StaticResource EdgeBrush}" BorderThickness="1"
+                        TextElement.FontFamily="{StaticResource UiFont}" TextElement.FontWeight="Medium"
+                        TextElement.Foreground="{StaticResource LabelBrush}" TextElement.FontSize="14">
+                    <Border.Effect>
+                        <DropShadowEffect BlurRadius="14" ShadowDepth="3" Opacity="0.45" Color="Black" />
+                    </Border.Effect>
+                    <StackPanel>
+                        <TextBlock Text="Output folder" FontSize="12" Foreground="{StaticResource MutedBrush}" />
+                        <Grid Margin="0,4,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="{Binding OutputFolder}" ToolTip="{Binding OutputFolder}" FontSize="13"
+                                       VerticalAlignment="Center" TextTrimming="CharacterEllipsis" Margin="0,0,10,0" />
+                            <Button x:Name="ChangeFolderButton" Grid.Column="1" Style="{StaticResource PanelButton}"
+                                    Content="Change…" Command="{Binding ChangeOutputFolderCommand}" />
+                        </Grid>
+
+                        <Border Height="1" Background="{StaticResource EdgeBrush}" Margin="0,12" />
+
+                        <ToggleButton Style="{StaticResource Switch}" IsChecked="{Binding IsPinned}">
+                            <TextBlock Text="Always on top" />
+                        </ToggleButton>
+                    </StackPanel>
+                </Border>
+            </Popup>
         </Grid>
     </Border>
 </Window>

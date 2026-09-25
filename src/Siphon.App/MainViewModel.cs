@@ -29,6 +29,7 @@ public sealed partial class MainViewModel : ObservableObject
     {
         _settings = settings;
         IsPinned = settings.AlwaysOnTop;
+        OutputFolder = settings.OutputFolder;
         if (settings.LastFilePath is { } last && File.Exists(last))
             LastFilePath = last;
 
@@ -69,6 +70,10 @@ public sealed partial class MainViewModel : ObservableObject
 
     [ObservableProperty]
     public partial bool IsPinned { get; set; }
+
+    /// <summary>Where new recordings go. Changes apply to the next recording.</summary>
+    [ObservableProperty]
+    public partial string OutputFolder { get; set; }
 
     public string? LastFileName => LastFilePath is null ? null : Path.GetFileName(LastFilePath);
 
@@ -112,8 +117,8 @@ public sealed partial class MainViewModel : ObservableObject
             Process.Start("explorer.exe", $"/select,\"{path}\"");
             return;
         }
-        Directory.CreateDirectory(_settings.OutputFolder);
-        Process.Start("explorer.exe", $"\"{_settings.OutputFolder}\"");
+        Directory.CreateDirectory(OutputFolder);
+        Process.Start("explorer.exe", $"\"{OutputFolder}\"");
     }
 
     public void OpenLastFile()
@@ -122,9 +127,27 @@ public sealed partial class MainViewModel : ObservableObject
             Process.Start(new ProcessStartInfo(path) { UseShellExecute = true });
     }
 
+    [RelayCommand]
+    private void ChangeOutputFolder()
+    {
+        var dialog = new Microsoft.Win32.OpenFolderDialog
+        {
+            Title = "Choose where Siphon saves recordings",
+            InitialDirectory = Directory.Exists(OutputFolder) ? OutputFolder : null,
+        };
+        if (dialog.ShowDialog(Application.Current.MainWindow) == true)
+            OutputFolder = dialog.FolderName;
+    }
+
     partial void OnIsPinnedChanged(bool value)
     {
         _settings.AlwaysOnTop = value;
+        _settings.Save();
+    }
+
+    partial void OnOutputFolderChanged(string value)
+    {
+        _settings.OutputFolder = value;
         _settings.Save();
     }
 
@@ -178,12 +201,12 @@ public sealed partial class MainViewModel : ObservableObject
         CaptureSession session;
         try
         {
-            string path = RecordingNames.NewRecordingPath(_settings.OutputFolder, null, DateTime.Now);
+            string path = RecordingNames.NewRecordingPath(OutputFolder, null, DateTime.Now);
             session = new CaptureSession(_source, new WavSink(path, _source.Format));
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {
-            ShowNotice($"Couldn't create a file in {_settings.OutputFolder}. Check the folder exists and is writable.");
+            ShowNotice($"Couldn't create a file in {OutputFolder}. Check the folder exists and is writable.");
             return;
         }
 
