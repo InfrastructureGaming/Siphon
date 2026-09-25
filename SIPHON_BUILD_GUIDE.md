@@ -2,6 +2,8 @@
 
 *Working title. Rename freely.*
 
+> **Status (2026-09-25):** v1 shipped with phases 1–3: system-audio capture, the full UI, and settings. Window position memory and drag-out were pulled forward from Phase 5. **Phase 4** (per-app capture) and the rest of **Phase 5** (device-change handling, app-exit note, app icon) are parked. Everything below is kept as the design for picking them up later.
+
 A tiny Windows utility that records system audio (or a single app's audio) to an uncompressed WAV file. It has one window, one big button, and one job.
 
 This guide is written for Claude Code. Build it in phase order and verify each phase before moving on.

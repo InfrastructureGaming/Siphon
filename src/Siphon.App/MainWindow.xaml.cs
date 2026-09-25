@@ -39,7 +39,10 @@ public partial class MainWindow : Window
         _settings.WindowTop = Top;
         await _viewModel.ShutdownAsync();
         _shutdownComplete = true;
-        Close();
+
+        // ShutdownAsync can complete synchronously (nothing recording), in which case we are
+        // still inside this Closing event and WPF forbids a nested Close(). Queue it instead.
+        await Dispatcher.InvokeAsync(Close, System.Windows.Threading.DispatcherPriority.Background);
     }
 
     private void OnCloseClick(object sender, RoutedEventArgs e) => Close();
